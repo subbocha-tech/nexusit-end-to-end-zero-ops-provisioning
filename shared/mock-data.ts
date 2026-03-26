@@ -1,7 +1,7 @@
 import type { User, Chat, ChatMessage } from './types';
 export const MOCK_USERS: User[] = [
-  { id: 'u1', name: 'Admin User' },
-  { id: 'u2', name: 'Finance Lead' }
+  { id: 'u1', name: 'Admin User', department: 'IT', email: 'admin@nexus-it.io' },
+  { id: 'u2', name: 'Finance Lead', department: 'Finance', email: 'finance@nexus-it.io' }
 ];
 export const MOCK_CHATS: Chat[] = [
   { id: 'c1', title: 'System Alerts' },
@@ -29,17 +29,21 @@ export const MOCK_APPS: AppEntry[] = [
 ];
 export interface ProvisioningRequest {
   id: string;
+  appId: string;
   appName: string;
+  userId: string;
   userName: string;
   department: string;
-  status: 'pending' | 'approved' | 'provisioned' | 'rejected';
-  date: string;
+  status: 'pending' | 'approved' | 'provisioned' | 'rejected' | 'provisioning';
+  justification: string;
+  createdAt: string;
+  updatedAt: string;
 }
 export const MOCK_REQUESTS: ProvisioningRequest[] = [
-  { id: 'r1', appName: 'GitHub', userName: 'Yuki Tanaka', department: 'Engineering', status: 'provisioned', date: '2024-05-10' },
-  { id: 'r2', appName: 'Salesforce', userName: 'Kenji Sato', department: 'Sales', status: 'pending', date: '2024-05-12' },
-  { id: 'r3', appName: 'AWS', userName: 'Admin', department: 'IT', status: 'approved', date: '2024-05-11' },
-  { id: 'r4', appName: 'Slack', userName: 'Emi Ito', department: 'Marketing', status: 'provisioned', date: '2024-05-09' },
+  { id: 'r1', appId: 'a2', appName: 'GitHub', userId: 'u1', userName: 'Yuki Tanaka', department: 'Engineering', status: 'provisioned', justification: 'Required for new project source control.', createdAt: '2024-05-10', updatedAt: '2024-05-10' },
+  { id: 'r2', appId: 'a4', appName: 'Salesforce', userId: 'u2', userName: 'Kenji Sato', department: 'Sales', status: 'pending', justification: 'Access to CRM for lead management.', createdAt: '2024-05-12', updatedAt: '2024-05-12' },
+  { id: 'r3', appId: 'a3', appName: 'AWS', userId: 'u1', userName: 'Admin', department: 'IT', status: 'approved', justification: 'Infrastructure maintenance.', createdAt: '2024-05-11', updatedAt: '2024-05-11' },
+  { id: 'r4', appId: 'a1', appName: 'Slack', userId: 'u1', userName: 'Emi Ito', department: 'Marketing', status: 'provisioned', justification: 'Team communication.', createdAt: '2024-05-09', updatedAt: '2024-05-09' },
 ];
 export const MOCK_BILLING_DATA = [
   { month: 'Jan', spend: 4200, licenses: 145 },

@@ -53,3 +53,14 @@ export interface AppEntry {
   description: string;
   monthlyCost: number;
 }
+export interface CreateRequestInput {
+  appId: string;
+  appName: string;
+  userId: string;
+  userName: string;
+  department: string;
+  justification: string;
+}
+export interface UpdateStatusInput {
+  status: RequestStatus;
+}

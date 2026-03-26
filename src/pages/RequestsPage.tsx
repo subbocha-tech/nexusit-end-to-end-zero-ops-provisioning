@@ -1,17 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  CheckCircle2, 
-  XCircle, 
-  Clock, 
-  Zap, 
-  Inbox, 
+import {
+  CheckCircle2,
+  XCircle,
+  Clock,
+  Zap,
+  Inbox,
   ChevronRight,
-  User
+  User,
+  Loader2
 } from 'lucide-react';
 import { useProvisioningStore } from '@/store/use-provisioning-store';
 import { cn } from '@/lib/utils';
@@ -19,8 +20,14 @@ export function RequestsPage() {
   const { t } = useTranslation();
   const requests = useProvisioningStore(s => s.requests);
   const updateStatus = useProvisioningStore(s => s.updateRequestStatus);
+  const [processingId, setProcessingId] = useState<string | null>(null);
   const myRequests = requests.filter(r => r.userId === 'u1');
   const pendingApprovals = requests.filter(r => r.status === 'pending');
+  const handleAction = async (id: string, status: 'approved' | 'rejected') => {
+    setProcessingId(id);
+    await updateStatus(id, status);
+    setProcessingId(null);
+  };
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'provisioned': return <CheckCircle2 className="h-4 w-4 text-emerald-500" />;
@@ -90,13 +97,6 @@ export function RequestsPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-6">
-                      <div className="hidden sm:block text-right">
-                        <p className="text-xs text-muted-foreground uppercase font-semibold">Status</p>
-                        <div className="flex items-center gap-2 mt-1 justify-end">
-                          {getStatusIcon(req.status)}
-                          <span className="text-sm font-medium capitalize">{req.status}</span>
-                        </div>
-                      </div>
                       <StatusBadge status={req.status} />
                       <Button variant="ghost" size="icon"><ChevronRight className="h-4 w-4" /></Button>
                     </div>
@@ -141,16 +141,18 @@ export function RequestsPage() {
                       <p className="text-sm italic text-foreground/80">"{req.justification}"</p>
                     </div>
                     <div className="flex gap-3">
-                      <Button 
+                      <Button
                         className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
-                        onClick={() => updateStatus(req.id, 'approved')}
+                        disabled={processingId === req.id}
+                        onClick={() => handleAction(req.id, 'approved')}
                       >
-                        Approve
+                        {processingId === req.id ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Approve'}
                       </Button>
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         className="flex-1 border-red-200 text-red-600 hover:bg-red-50"
-                        onClick={() => updateStatus(req.id, 'rejected')}
+                        disabled={processingId === req.id}
+                        onClick={() => handleAction(req.id, 'rejected')}
                       >
                         Deny
                       </Button>

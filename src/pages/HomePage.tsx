@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import {
@@ -8,7 +8,8 @@ import {
   ArrowUpRight,
   ShieldCheck,
   PlusCircle,
-  Key
+  Key,
+  Loader2
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,15 +20,30 @@ export function HomePage() {
   const { t } = useTranslation();
   const requests = useProvisioningStore(s => s.requests);
   const licenses = useProvisioningStore(s => s.licenses);
+  const isLoading = useProvisioningStore(s => s.isLoading);
+  const initialize = useProvisioningStore(s => s.initialize);
+  useEffect(() => {
+    initialize();
+  }, [initialize]);
+  const sortedRequests = [...requests].sort((a, b) => 
+    new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+  );
   const pendingCount = requests.filter(r => r.status === 'pending').length;
   const activeCount = licenses.length;
   const totalSpend = licenses.reduce((sum, l) => sum + l.monthlyCost, 0);
   const stats = [
-    { label: t('dashboard.stats.totalSpend'), value: `$${totalSpend.toLocaleString()}`, icon: CreditCard, color: 'text-blue-600', trend: '+12%' },
+    { label: t('dashboard.stats.totalSpend'), value: `${totalSpend.toLocaleString()}`, icon: CreditCard, color: 'text-blue-600', trend: '+12%' },
     { label: t('dashboard.stats.activeLicenses'), value: activeCount.toString(), icon: Users, color: 'text-emerald-600', trend: '+5' },
     { label: t('dashboard.stats.pendingRequests'), value: pendingCount.toString(), icon: Clock, color: 'text-orange-600', trend: '-2' },
     { label: t('dashboard.stats.utilization'), value: '94%', icon: ShieldCheck, color: 'text-indigo-600', trend: '+3%' },
   ];
+  if (isLoading) {
+    return (
+      <div className="flex h-[60vh] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+      </div>
+    );
+  }
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'provisioned': return <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 hover:bg-emerald-500/20">{t('common.status.provisioned')}</Badge>;
@@ -78,7 +94,7 @@ export function HomePage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
-              {requests.slice(0, 5).map((req) => (
+              {sortedRequests.slice(0, 5).map((req) => (
                 <div key={req.id} className="flex items-center justify-between group">
                   <div className="flex items-center gap-4">
                     <div className="h-10 w-10 rounded-full bg-accent flex items-center justify-center font-bold text-xs">
@@ -90,7 +106,7 @@ export function HomePage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
-                    <span className="text-xs text-muted-foreground hidden sm:block">{req.createdAt}</span>
+                    <span className="text-xs text-muted-foreground hidden sm:block">{req.updatedAt}</span>
                     {getStatusBadge(req.status)}
                   </div>
                 </div>
@@ -118,18 +134,6 @@ export function HomePage() {
               <Button className="w-full bg-blue-500 text-white hover:bg-blue-400 border-none justify-start gap-2 h-11">
                 <Key className="h-4 w-4" /> {t('dashboard.requestReset')}
               </Button>
-            </CardContent>
-          </Card>
-          <Card className="border-border/50 shadow-sm border-dashed">
-            <CardContent className="p-6 flex flex-col items-center justify-center text-center space-y-2">
-              <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center">
-                <ShieldCheck className="h-6 w-6 text-muted-foreground" />
-              </div>
-              <h4 className="text-sm font-semibold">Policy Update</h4>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                GitHub Enterprise access now requires Manager level approval.
-              </p>
-              <Button variant="link" size="sm" className="text-xs h-auto p-0 text-blue-600">Review changes</Button>
             </CardContent>
           </Card>
         </div>

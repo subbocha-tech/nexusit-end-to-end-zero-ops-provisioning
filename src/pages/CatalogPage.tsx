@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Search, Filter, Info, ChevronRight, CheckCircle2, Clock } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useProvisioningStore } from '@/store/use-provisioning-store';
 import { RequestModal } from '@/components/RequestModal';
 import type { AppEntry } from '@shared/types';
@@ -14,8 +15,13 @@ export function CatalogPage() {
   const apps = useProvisioningStore(s => s.apps);
   const requests = useProvisioningStore(s => s.requests);
   const licenses = useProvisioningStore(s => s.licenses);
+  const isLoading = useProvisioningStore(s => s.isLoading);
+  const initialize = useProvisioningStore(s => s.initialize);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedApp, setSelectedApp] = useState<AppEntry | null>(null);
+  useEffect(() => {
+    if (apps.length === 0) initialize();
+  }, [apps.length, initialize]);
   const filteredApps = apps.filter(app =>
     app.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     app.category.toLowerCase().includes(searchQuery.toLowerCase())
@@ -50,68 +56,75 @@ export function CatalogPage() {
         </div>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {filteredApps.map((app) => {
-          const state = getAppState(app.id);
-          return (
-            <Card key={app.id} className="group border-border/50 shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1 overflow-hidden flex flex-col">
-              <CardHeader className="p-6 pb-0 flex flex-row items-center justify-between">
-                <div className="h-12 w-12 rounded-xl bg-accent/30 p-2.5 flex items-center justify-center overflow-hidden">
-                  <img src={app.icon} alt={app.name} className="h-full w-full object-contain grayscale-[0.3] group-hover:grayscale-0 transition-all duration-300" />
-                </div>
-                {state === 'active' ? (
-                  <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 gap-1 px-2 py-1">
-                    <CheckCircle2 className="h-3 w-3" /> Active
-                  </Badge>
-                ) : state === 'pending' ? (
-                  <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200 gap-1 px-2 py-1">
-                    <Clock className="h-3 w-3" /> Pending
-                  </Badge>
-                ) : (
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground/50 hover:text-foreground">
-                    <Info className="h-4 w-4" />
-                  </Button>
-                )}
-              </CardHeader>
-              <CardContent className="p-6 flex-1 space-y-2">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-bold text-lg">{app.name}</h3>
-                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{app.category}</span>
-                </div>
-                <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
-                  {app.description}
-                </p>
-                <div className="pt-2">
-                  <p className="text-xs font-medium text-muted-foreground">Estimated Cost</p>
-                  <p className="text-sm font-bold text-foreground">${app.monthlyCost.toFixed(2)} / mo</p>
-                </div>
-              </CardContent>
-              <CardFooter className="p-6 pt-0">
-                <Button 
-                  className={cn(
-                    "w-full font-medium gap-2 group/btn",
-                    state === 'available' ? "bg-blue-600 hover:bg-blue-700 text-white" : "bg-muted text-muted-foreground pointer-events-none"
-                  )}
-                  onClick={() => state === 'available' && setSelectedApp(app)}
-                >
-                  {state === 'available' ? t('catalog.request') : state === 'active' ? 'Already Provisioned' : 'Request Pending'}
-                  {state === 'available' && <ChevronRight className="h-4 w-4 transition-transform group-hover/btn:translate-x-1" />}
-                </Button>
-              </CardFooter>
+        {isLoading ? (
+          Array.from({ length: 8 }).map((_, i) => (
+            <Card key={i} className="border-border/50 shadow-sm overflow-hidden h-[340px]">
+              <div className="p-6 space-y-4">
+                <Skeleton className="h-12 w-12 rounded-xl" />
+                <Skeleton className="h-6 w-3/4" />
+                <Skeleton className="h-16 w-full" />
+                <Skeleton className="h-10 w-full" />
+              </div>
             </Card>
-          );
-        })}
+          ))
+        ) : (
+          filteredApps.map((app) => {
+            const state = getAppState(app.id);
+            return (
+              <Card key={app.id} className="group border-border/50 shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1 overflow-hidden flex flex-col">
+                <CardHeader className="p-6 pb-0 flex flex-row items-center justify-between">
+                  <div className="h-12 w-12 rounded-xl bg-accent/30 p-2.5 flex items-center justify-center overflow-hidden">
+                    <img src={app.icon} alt={app.name} className="h-full w-full object-contain grayscale-[0.3] group-hover:grayscale-0 transition-all duration-300" />
+                  </div>
+                  {state === 'active' ? (
+                    <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 gap-1 px-2 py-1">
+                      <CheckCircle2 className="h-3 w-3" /> Active
+                    </Badge>
+                  ) : state === 'pending' ? (
+                    <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200 gap-1 px-2 py-1">
+                      <Clock className="h-3 w-3" /> Pending
+                    </Badge>
+                  ) : (
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground/50 hover:text-foreground">
+                      <Info className="h-4 w-4" />
+                    </Button>
+                  )}
+                </CardHeader>
+                <CardContent className="p-6 flex-1 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-bold text-lg">{app.name}</h3>
+                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{app.category}</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+                    {app.description}
+                  </p>
+                  <div className="pt-2">
+                    <p className="text-xs font-medium text-muted-foreground">Estimated Cost</p>
+                    <p className="text-sm font-bold text-foreground">${app.monthlyCost.toFixed(2)} / mo</p>
+                  </div>
+                </CardContent>
+                <CardFooter className="p-6 pt-0">
+                  <Button
+                    className={cn(
+                      "w-full font-medium gap-2 group/btn",
+                      state === 'available' ? "bg-blue-600 hover:bg-blue-700 text-white" : "bg-muted text-muted-foreground pointer-events-none"
+                    )}
+                    onClick={() => state === 'available' && setSelectedApp(app)}
+                  >
+                    {state === 'available' ? t('catalog.request') : state === 'active' ? 'Already Provisioned' : 'Request Pending'}
+                    {state === 'available' && <ChevronRight className="h-4 w-4 transition-transform group-hover/btn:translate-x-1" />}
+                  </Button>
+                </CardFooter>
+              </Card>
+            );
+          })
+        )}
       </div>
-      <RequestModal 
-        app={selectedApp} 
-        isOpen={!!selectedApp} 
-        onClose={() => setSelectedApp(null)} 
+      <RequestModal
+        app={selectedApp}
+        isOpen={!!selectedApp}
+        onClose={() => setSelectedApp(null)}
       />
-      {filteredApps.length === 0 && (
-        <div className="py-20 text-center">
-          <p className="text-lg text-muted-foreground">No applications found matching "{searchQuery}"</p>
-          <Button variant="link" onClick={() => setSearchQuery('')} className="mt-2 text-blue-600">Clear search</Button>
-        </div>
-      )}
     </div>
   );
 }
