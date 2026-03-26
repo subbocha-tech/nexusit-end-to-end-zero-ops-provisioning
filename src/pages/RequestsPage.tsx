@@ -1,40 +1,33 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLocation, useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import {
-  CheckCircle2,
-  XCircle,
-  Clock,
-  Zap,
-  Inbox,
+import { 
+  CheckCircle2, 
+  XCircle, 
+  Clock, 
+  Zap, 
+  Inbox, 
   ChevronRight,
-  User,
-  Loader2
+  User
 } from 'lucide-react';
 import { useProvisioningStore } from '@/store/use-provisioning-store';
 import { cn } from '@/lib/utils';
 export function RequestsPage() {
   const { t } = useTranslation();
-  const location = useLocation();
-  const navigate = useNavigate();
   const requests = useProvisioningStore(s => s.requests);
   const updateStatus = useProvisioningStore(s => s.updateRequestStatus);
-  const initialize = useProvisioningStore(s => s.initialize);
-  const [processingId, setProcessingId] = useState<string | null>(null);
-  useEffect(() => {
-    initialize();
-  }, [initialize]);
-  const activeTab = location.pathname.includes('/approvals') ? 'approvals' : 'mine';
   const myRequests = requests.filter(r => r.userId === 'u1');
   const pendingApprovals = requests.filter(r => r.status === 'pending');
-  const handleAction = async (id: string, status: 'approved' | 'rejected') => {
-    setProcessingId(id);
-    await updateStatus(id, status);
-    setProcessingId(null);
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'provisioned': return <CheckCircle2 className="h-4 w-4 text-emerald-500" />;
+      case 'rejected': return <XCircle className="h-4 w-4 text-red-500" />;
+      case 'provisioning': return <Zap className="h-4 w-4 text-blue-500 animate-pulse" />;
+      default: return <Clock className="h-4 w-4 text-orange-500" />;
+    }
   };
   const StatusBadge = ({ status }: { status: string }) => {
     const labels: Record<string, string> = {
@@ -46,10 +39,10 @@ export function RequestsPage() {
     };
     return (
       <Badge variant="outline" className={cn(
-        "capitalize px-2 py-0.5 text-[10px] font-semibold",
+        "capitalize",
         status === 'provisioned' && "bg-emerald-50 text-emerald-700 border-emerald-200",
         status === 'pending' && "bg-orange-50 text-orange-700 border-orange-200",
-        status === 'provisioning' && "bg-blue-50 text-blue-700 border-blue-200 animate-pulse"
+        status === 'provisioning' && "bg-blue-50 text-blue-700 border-blue-200"
       )}>
         {labels[status] || status}
       </Badge>
@@ -58,14 +51,10 @@ export function RequestsPage() {
   return (
     <div className="space-y-8 animate-fade-in">
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight">{activeTab === 'mine' ? t('nav.requests') : t('nav.approvals')}</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{t('nav.requests')}</h1>
         <p className="text-muted-foreground">Manage your application access and approvals.</p>
       </div>
-      <Tabs 
-        value={activeTab} 
-        onValueChange={(val) => navigate(val === 'mine' ? '/requests' : '/approvals')}
-        className="w-full"
-      >
+      <Tabs defaultValue="mine" className="w-full">
         <TabsList className="grid w-full max-w-md grid-cols-2 bg-muted/50">
           <TabsTrigger value="mine">{t('nav.requests')}</TabsTrigger>
           <TabsTrigger value="approvals" className="relative">
@@ -101,8 +90,15 @@ export function RequestsPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-6">
+                      <div className="hidden sm:block text-right">
+                        <p className="text-xs text-muted-foreground uppercase font-semibold">Status</p>
+                        <div className="flex items-center gap-2 mt-1 justify-end">
+                          {getStatusIcon(req.status)}
+                          <span className="text-sm font-medium capitalize">{req.status}</span>
+                        </div>
+                      </div>
                       <StatusBadge status={req.status} />
-                      <Button variant="ghost" size="icon" className="h-8 w-8"><ChevronRight className="h-4 w-4" /></Button>
+                      <Button variant="ghost" size="icon"><ChevronRight className="h-4 w-4" /></Button>
                     </div>
                   </div>
                 </CardContent>
@@ -122,7 +118,7 @@ export function RequestsPage() {
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {pendingApprovals.map((req) => (
-                <Card key={req.id} className="border-border/50 shadow-sm border-l-4 border-l-blue-500 overflow-hidden">
+                <Card key={req.id} className="border-border/50 shadow-sm border-l-4 border-l-blue-500">
                   <CardHeader className="pb-4">
                     <div className="flex justify-between items-start">
                       <div className="flex items-center gap-3">
@@ -131,32 +127,30 @@ export function RequestsPage() {
                         </div>
                         <div>
                           <CardTitle className="text-base">{req.userName}</CardTitle>
-                          <CardDescription className="text-xs">{req.department}</CardDescription>
+                          <CardDescription>{req.department}</CardDescription>
                         </div>
                       </div>
-                      <Badge variant="outline" className="text-blue-600 bg-blue-50 border-blue-200 text-[10px] font-bold">
+                      <Badge variant="outline" className="text-blue-600 bg-blue-50 border-blue-200">
                         {req.appName}
                       </Badge>
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="bg-accent/30 p-4 rounded-lg">
-                      <p className="text-[10px] font-semibold text-muted-foreground uppercase mb-2">Justification</p>
+                      <p className="text-xs font-semibold text-muted-foreground uppercase mb-2">Justification</p>
                       <p className="text-sm italic text-foreground/80">"{req.justification}"</p>
                     </div>
                     <div className="flex gap-3">
-                      <Button
+                      <Button 
                         className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
-                        disabled={processingId === req.id}
-                        onClick={() => handleAction(req.id, 'approved')}
+                        onClick={() => updateStatus(req.id, 'approved')}
                       >
-                        {processingId === req.id ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Approve'}
+                        Approve
                       </Button>
-                      <Button
-                        variant="outline"
+                      <Button 
+                        variant="outline" 
                         className="flex-1 border-red-200 text-red-600 hover:bg-red-50"
-                        disabled={processingId === req.id}
-                        onClick={() => handleAction(req.id, 'rejected')}
+                        onClick={() => updateStatus(req.id, 'rejected')}
                       >
                         Deny
                       </Button>

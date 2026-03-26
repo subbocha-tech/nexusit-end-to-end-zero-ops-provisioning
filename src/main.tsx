@@ -15,6 +15,8 @@ import '@/index.css'
 import { HomePage } from '@/pages/HomePage'
 import { CatalogPage } from '@/pages/CatalogPage'
 import { BillingPage } from '@/pages/BillingPage'
+import { RequestsPage } from '@/pages/RequestsPage'
+import { LicensesPage } from '@/pages/LicensesPage'
 import { AppLayout } from '@/components/layout/AppLayout'
 const queryClient = new QueryClient();
 const router = createBrowserRouter([
@@ -35,7 +37,17 @@ const router = createBrowserRouter([
   },
   {
     path: "/requests",
-    element: <AppLayout container><div className="p-8">My Requests (Coming Soon)</div></AppLayout>,
+    element: <AppLayout container><RequestsPage /></AppLayout>,
+    errorElement: <RouteErrorBoundary />,
+  },
+  {
+    path: "/approvals",
+    element: <AppLayout container><RequestsPage /></AppLayout>, // Defaults to logic in RequestsPage handling approvals
+    errorElement: <RouteErrorBoundary />,
+  },
+  {
+    path: "/licenses",
+    element: <AppLayout container><LicensesPage /></AppLayout>,
     errorElement: <RouteErrorBoundary />,
   },
 ]);

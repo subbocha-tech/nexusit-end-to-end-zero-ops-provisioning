@@ -1,9 +1,10 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { 
-  CreditCard, 
-  Users, 
-  Clock, 
+import { Link } from 'react-router-dom';
+import {
+  CreditCard,
+  Users,
+  Clock,
   ArrowUpRight,
   ShieldCheck,
   PlusCircle,
@@ -12,21 +13,27 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { MOCK_REQUESTS } from '@shared/mock-data';
+import { useProvisioningStore } from '@/store/use-provisioning-store';
 import { cn } from '@/lib/utils';
 export function HomePage() {
   const { t } = useTranslation();
+  const requests = useProvisioningStore(s => s.requests);
+  const licenses = useProvisioningStore(s => s.licenses);
+  const pendingCount = requests.filter(r => r.status === 'pending').length;
+  const activeCount = licenses.length;
+  const totalSpend = licenses.reduce((sum, l) => sum + l.monthlyCost, 0);
   const stats = [
-    { label: t('dashboard.stats.totalSpend'), value: '$5,820', icon: CreditCard, color: 'text-blue-600', trend: '+12%' },
-    { label: t('dashboard.stats.activeLicenses'), value: '185', icon: Users, color: 'text-emerald-600', trend: '+5' },
-    { label: t('dashboard.stats.pendingRequests'), value: '3', icon: Clock, color: 'text-orange-600', trend: '-2' },
-    { label: t('dashboard.stats.utilization'), value: '92%', icon: ShieldCheck, color: 'text-indigo-600', trend: '+3%' },
+    { label: t('dashboard.stats.totalSpend'), value: `$${totalSpend.toLocaleString()}`, icon: CreditCard, color: 'text-blue-600', trend: '+12%' },
+    { label: t('dashboard.stats.activeLicenses'), value: activeCount.toString(), icon: Users, color: 'text-emerald-600', trend: '+5' },
+    { label: t('dashboard.stats.pendingRequests'), value: pendingCount.toString(), icon: Clock, color: 'text-orange-600', trend: '-2' },
+    { label: t('dashboard.stats.utilization'), value: '94%', icon: ShieldCheck, color: 'text-indigo-600', trend: '+3%' },
   ];
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'provisioned': return <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 hover:bg-emerald-500/20">{t('common.status.provisioned')}</Badge>;
       case 'approved': return <Badge className="bg-blue-500/10 text-blue-600 border-blue-500/20 hover:bg-blue-500/20">{t('common.status.approved')}</Badge>;
       case 'pending': return <Badge className="bg-orange-500/10 text-orange-600 border-orange-500/20 hover:bg-orange-500/20">{t('common.status.pending')}</Badge>;
+      case 'provisioning': return <Badge className="bg-blue-500/10 text-blue-600 border-blue-500/20 animate-pulse">Provisioning</Badge>;
       default: return <Badge variant="outline">{status}</Badge>;
     }
   };
@@ -63,13 +70,15 @@ export function HomePage() {
               <CardTitle>{t('dashboard.recentActivity')}</CardTitle>
               <CardDescription>Latest provisioning events across all platforms</CardDescription>
             </div>
-            <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700">
-              {t('common.viewAll')} <ArrowUpRight className="ml-1 h-3 w-3" />
-            </Button>
+            <Link to="/requests">
+              <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700">
+                {t('common.viewAll')} <ArrowUpRight className="ml-1 h-3 w-3" />
+              </Button>
+            </Link>
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
-              {MOCK_REQUESTS.map((req) => (
+              {requests.slice(0, 5).map((req) => (
                 <div key={req.id} className="flex items-center justify-between group">
                   <div className="flex items-center gap-4">
                     <div className="h-10 w-10 rounded-full bg-accent flex items-center justify-center font-bold text-xs">
@@ -81,11 +90,14 @@ export function HomePage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
-                    <span className="text-xs text-muted-foreground hidden sm:block">{req.date}</span>
+                    <span className="text-xs text-muted-foreground hidden sm:block">{req.createdAt}</span>
                     {getStatusBadge(req.status)}
                   </div>
                 </div>
               ))}
+              {requests.length === 0 && (
+                <p className="text-center py-10 text-muted-foreground">No recent activity found.</p>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -98,9 +110,11 @@ export function HomePage() {
               <CardTitle className="text-white">{t('dashboard.quickActions')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button className="w-full bg-white text-blue-600 hover:bg-blue-50 border-none justify-start gap-2 h-11">
-                <PlusCircle className="h-4 w-4" /> {t('dashboard.requestNewApp')}
-              </Button>
+              <Link to="/catalog">
+                <Button className="w-full bg-white text-blue-600 hover:bg-blue-50 border-none justify-start gap-2 h-11">
+                  <PlusCircle className="h-4 w-4" /> {t('dashboard.requestNewApp')}
+                </Button>
+              </Link>
               <Button className="w-full bg-blue-500 text-white hover:bg-blue-400 border-none justify-start gap-2 h-11">
                 <Key className="h-4 w-4" /> {t('dashboard.requestReset')}
               </Button>

@@ -1,18 +1,32 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Search, Filter, Info, ChevronRight } from 'lucide-react';
+import { Search, Filter, Info, ChevronRight, CheckCircle2, Clock } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
-import { MOCK_APPS } from '@shared/mock-data';
+import { Badge } from '@/components/ui/badge';
+import { useProvisioningStore } from '@/store/use-provisioning-store';
+import { RequestModal } from '@/components/RequestModal';
+import type { AppEntry } from '@shared/types';
 import { cn } from '@/lib/utils';
 export function CatalogPage() {
   const { t } = useTranslation();
+  const apps = useProvisioningStore(s => s.apps);
+  const requests = useProvisioningStore(s => s.requests);
+  const licenses = useProvisioningStore(s => s.licenses);
   const [searchQuery, setSearchQuery] = useState('');
-  const filteredApps = MOCK_APPS.filter(app => 
+  const [selectedApp, setSelectedApp] = useState<AppEntry | null>(null);
+  const filteredApps = apps.filter(app =>
     app.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     app.category.toLowerCase().includes(searchQuery.toLowerCase())
   );
+  const getAppState = (appId: string) => {
+    const hasLicense = licenses.some(l => l.appId === appId && l.userId === 'u1');
+    if (hasLicense) return 'active';
+    const pendingRequest = requests.find(r => r.appId === appId && r.userId === 'u1' && (r.status === 'pending' || r.status === 'approved' || r.status === 'provisioning'));
+    if (pendingRequest) return 'pending';
+    return 'available';
+  };
   return (
     <div className="space-y-8 animate-fade-in">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -23,8 +37,8 @@ export function CatalogPage() {
         <div className="flex items-center gap-3 w-full md:w-auto">
           <div className="relative flex-1 md:w-80">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input 
-              placeholder={t('catalog.search')} 
+            <Input
+              placeholder={t('catalog.search')}
               className="pl-9 bg-background border-border/50"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -36,38 +50,62 @@ export function CatalogPage() {
         </div>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {filteredApps.map((app) => (
-          <Card key={app.id} className="group border-border/50 shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1 overflow-hidden flex flex-col">
-            <CardHeader className="p-6 pb-0 flex flex-row items-center justify-between">
-              <div className="h-12 w-12 rounded-xl bg-accent/30 p-2.5 flex items-center justify-center overflow-hidden">
-                <img src={app.icon} alt={app.name} className="h-full w-full object-contain grayscale-[0.3] group-hover:grayscale-0 transition-all duration-300" />
-              </div>
-              <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground/50 hover:text-foreground">
-                <Info className="h-4 w-4" />
-              </Button>
-            </CardHeader>
-            <CardContent className="p-6 flex-1 space-y-2">
-              <div className="flex items-center justify-between">
-                <h3 className="font-bold text-lg">{app.name}</h3>
-                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{app.category}</span>
-              </div>
-              <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
-                {app.description}
-              </p>
-              <div className="pt-2">
-                <p className="text-xs font-medium text-muted-foreground">Estimated Cost</p>
-                <p className="text-sm font-bold text-foreground">${app.monthlyCost.toFixed(2)} / mo</p>
-              </div>
-            </CardContent>
-            <CardFooter className="p-6 pt-0">
-              <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium gap-2 group/btn">
-                {t('catalog.request')}
-                <ChevronRight className="h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
-              </Button>
-            </CardFooter>
-          </Card>
-        ))}
+        {filteredApps.map((app) => {
+          const state = getAppState(app.id);
+          return (
+            <Card key={app.id} className="group border-border/50 shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1 overflow-hidden flex flex-col">
+              <CardHeader className="p-6 pb-0 flex flex-row items-center justify-between">
+                <div className="h-12 w-12 rounded-xl bg-accent/30 p-2.5 flex items-center justify-center overflow-hidden">
+                  <img src={app.icon} alt={app.name} className="h-full w-full object-contain grayscale-[0.3] group-hover:grayscale-0 transition-all duration-300" />
+                </div>
+                {state === 'active' ? (
+                  <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 gap-1 px-2 py-1">
+                    <CheckCircle2 className="h-3 w-3" /> Active
+                  </Badge>
+                ) : state === 'pending' ? (
+                  <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200 gap-1 px-2 py-1">
+                    <Clock className="h-3 w-3" /> Pending
+                  </Badge>
+                ) : (
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground/50 hover:text-foreground">
+                    <Info className="h-4 w-4" />
+                  </Button>
+                )}
+              </CardHeader>
+              <CardContent className="p-6 flex-1 space-y-2">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-bold text-lg">{app.name}</h3>
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{app.category}</span>
+                </div>
+                <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+                  {app.description}
+                </p>
+                <div className="pt-2">
+                  <p className="text-xs font-medium text-muted-foreground">Estimated Cost</p>
+                  <p className="text-sm font-bold text-foreground">${app.monthlyCost.toFixed(2)} / mo</p>
+                </div>
+              </CardContent>
+              <CardFooter className="p-6 pt-0">
+                <Button 
+                  className={cn(
+                    "w-full font-medium gap-2 group/btn",
+                    state === 'available' ? "bg-blue-600 hover:bg-blue-700 text-white" : "bg-muted text-muted-foreground pointer-events-none"
+                  )}
+                  onClick={() => state === 'available' && setSelectedApp(app)}
+                >
+                  {state === 'available' ? t('catalog.request') : state === 'active' ? 'Already Provisioned' : 'Request Pending'}
+                  {state === 'available' && <ChevronRight className="h-4 w-4 transition-transform group-hover/btn:translate-x-1" />}
+                </Button>
+              </CardFooter>
+            </Card>
+          );
+        })}
       </div>
+      <RequestModal 
+        app={selectedApp} 
+        isOpen={!!selectedApp} 
+        onClose={() => setSelectedApp(null)} 
+      />
       {filteredApps.length === 0 && (
         <div className="py-20 text-center">
           <p className="text-lg text-muted-foreground">No applications found matching "{searchQuery}"</p>

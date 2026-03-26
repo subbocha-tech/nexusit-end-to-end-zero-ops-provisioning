@@ -33,7 +33,6 @@ export function RequestModal({ app, isOpen, onClose }: RequestModalProps) {
     await new Promise(resolve => setTimeout(resolve, 1200));
     await submitRequest({
       appId: app.id,
-      appName: app.name,
       userId: 'u1', // Mock current user
       userName: 'Yuki Tanaka',
       department: 'Engineering',
