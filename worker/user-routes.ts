@@ -2,18 +2,31 @@ import { Hono } from "hono";
 import type { Env } from './core-utils';
 import { AppEntity, RequestEntity, LicenseEntity, UserEntity } from "./entities";
 import { ok, bad, notFound, isStr } from './core-utils';
+import { MOCK_APPS, MOCK_REQUESTS } from '@shared/mock-data';
 import type { RequestStatus, UpdateStatusInput } from "@shared/types";
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
   // APPS
   app.get('/api/apps', async (c) => {
     await AppEntity.ensureSeed(c.env);
-    const result = await AppEntity.list(c.env, null, 100);
+    let result = await AppEntity.list(c.env, null, 100);
+    if(result.items.length === 0) {
+      for(const appData of MOCK_APPS) {
+        await AppEntity.create(c.env, appData);
+      }
+      result = await AppEntity.list(c.env, null, 100);
+    }
     return ok(c, result.items);
   });
   // REQUESTS
   app.get('/api/requests', async (c) => {
     await RequestEntity.ensureSeed(c.env);
-    const result = await RequestEntity.list(c.env, null, 100);
+    let result = await RequestEntity.list(c.env, null, 100);
+    if(result.items.length === 0) {
+      for(const reqData of MOCK_REQUESTS) {
+        await RequestEntity.create(c.env, reqData);
+      }
+      result = await RequestEntity.list(c.env, null, 100);
+    }
     return ok(c, result.items);
   });
   app.post('/api/requests', async (c) => {

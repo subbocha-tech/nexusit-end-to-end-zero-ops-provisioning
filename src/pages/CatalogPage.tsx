@@ -21,7 +21,7 @@ export function CatalogPage() {
   const [selectedApp, setSelectedApp] = useState<AppEntry | null>(null);
   useEffect(() => {
     if (apps.length === 0) initialize();
-  }, [apps.length, initialize]);
+  }, [apps, initialize]);
   const filteredApps = apps.filter(app =>
     app.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     app.category.toLowerCase().includes(searchQuery.toLowerCase())
@@ -56,7 +56,7 @@ export function CatalogPage() {
         </div>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {isLoading ? (
+        {(isLoading || filteredApps.length === 0) ? (
           Array.from({ length: 8 }).map((_, i) => (
             <Card key={i} className="border-border/50 shadow-sm overflow-hidden h-[340px]">
               <div className="p-6 space-y-4">
