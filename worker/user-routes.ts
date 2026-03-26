@@ -1,34 +1,30 @@
 import { Hono } from "hono";
 import type { Env } from './core-utils';
-import { AppEntity, RequestEntity, LicenseEntity, UserEntity } from "./entities";
-import { ok, bad, notFound, isStr } from './core-utils';
+import { AppEntity, RequestEntity, LicenseEntity } from "./entities";
+import { ok, bad, notFound } from './core-utils';
 import { MOCK_APPS, MOCK_REQUESTS } from '@shared/mock-data';
-import type { RequestStatus, UpdateStatusInput } from "@shared/types";
+import type { UpdateStatusInput } from "@shared/types";
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
   // APPS
   app.get('/api/apps', async (c) => {
-    console.log('GET /api/apps hit');
+    // Robust seeding for Phase 4: ensure the index is populated with the expanded catalog
     await AppEntity.ensureSeed(c.env);
-    let result = await AppEntity.list(c.env, null, 100);
-    console.log(`after ensureSeed: ${result.items.length} items`);
-    if(result.items.length === 0) {
-      console.log(`extra seeding triggered, seeding ${MOCK_APPS.length} items`);
+    const result = await AppEntity.list(c.env, null, 100);
+    // Always return full MOCK_APPS if store is empty or for initial sync to ensure consistency
+    if (result.items.length < MOCK_APPS.length) {
+      console.log(`Synchronizing app entities... (${result.items.length}/${MOCK_APPS.length})`);
+      // Update entities that might be missing or need updates from expanded mock data
+      await Promise.all(MOCK_APPS.map(app => new AppEntity(c.env, app.id).save(app)));
       return ok(c, MOCK_APPS);
     }
-    console.log(`final result.items.length: ${result.items.length}`);
     return ok(c, result.items);
   });
   // REQUESTS
   app.get('/api/requests', async (c) => {
-    console.log('GET /api/requests hit');
     await RequestEntity.ensureSeed(c.env);
-    let result = await RequestEntity.list(c.env, null, 100);
-    console.log(`after ensureSeed: ${result.items.length} items`);
-    if(result.items.length === 0) {
-      console.log(`extra seeding triggered, seeding ${MOCK_REQUESTS.length} items`);
-      return ok(c, MOCK_REQUESTS);
-    }
-    console.log(`final result.items.length: ${result.items.length}`);
+    const result = await RequestEntity.list(c.env, null, 100);
+    // Fallback if seeding hasn't hit Durable Object yet
+    if (result.items.length === 0) return ok(c, MOCK_REQUESTS);
     return ok(c, result.items);
   });
   app.post('/api/requests', async (c) => {
@@ -57,16 +53,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   });
   // LICENSES
   app.get('/api/licenses', async (c) => {
-    console.log('GET /api/licenses hit');
-    await LicenseEntity.ensureSeed(c.env);
-    let result = await LicenseEntity.list(c.env, null, 100);
-    console.log(`after ensureSeed: ${result.items.length} items`);
-    if(result.items.length === 0) {
-      console.log(`extra seeding triggered for licenses`);
-      // Note: No MOCK_LICENSES imported, fallback to empty
-      return ok(c, []);
-    }
-    console.log(`final result.items.length: ${result.items.length}`);
+    const result = await LicenseEntity.list(c.env, null, 100);
     return ok(c, result.items);
   });
   app.post('/api/licenses', async (c) => {

@@ -60,21 +60,23 @@ export const useProvisioningStore = create<ProvisioningState>((set, get) => ({
         requests: state.requests.map(r => r.id === requestId ? updated : r)
       }));
       if (status === 'approved') {
-        // Zero-Ops Simulation
+        // High-fidelity Zero-Ops Simulation
         setTimeout(async () => {
           await get().updateRequestStatus(requestId, 'provisioning');
           setTimeout(async () => {
             await get().grantLicense(requestId);
-          }, 2000);
-        }, 1500);
+          }, 2500);
+        }, 1200);
       }
     } catch (err) {
       set({ error: (err as Error).message });
     }
   },
   grantLicense: async (requestId) => {
-    const request = get().requests.find(r => r.id === requestId);
-    const app = get().apps.find(a => a.id === request?.appId);
+    const currentRequests = get().requests;
+    const currentApps = get().apps;
+    const request = currentRequests.find(r => r.id === requestId);
+    const app = currentApps.find(a => a.id === request?.appId);
     if (!request || !app) return;
     try {
       const newLicense = await api<License>('/api/licenses', {

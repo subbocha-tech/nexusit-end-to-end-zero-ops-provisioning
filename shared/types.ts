@@ -48,7 +48,7 @@ export interface License {
 export interface AppEntry {
   id: string;
   name: string;
-  category: 'productivity' | 'development' | 'finance' | 'infrastructure';
+  category: 'productivity' | 'development' | 'finance' | 'infrastructure' | 'security' | 'marketing';
   icon: string;
   description: string;
   monthlyCost: number;

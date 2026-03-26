@@ -31,11 +31,15 @@ const resources = {
         search: 'Search applications...',
         request: 'Request Access',
         requested: 'Requested',
+        empty: 'No applications found.',
         categories: {
           all: 'All Apps',
           productivity: 'Productivity',
           development: 'Development',
           finance: 'Finance',
+          infrastructure: 'Infrastructure',
+          security: 'Security',
+          marketing: 'Marketing',
         }
       },
       billing: {
@@ -88,11 +92,15 @@ const resources = {
         search: 'アプリを検索...',
         request: '利用申請',
         requested: '申請済み',
+        empty: 'アプリケーションが見つかりません。',
         categories: {
           all: 'すべて',
           productivity: '生産性',
           development: '開発',
           finance: '財務',
+          infrastructure: 'インフラ',
+          security: 'セキュリティ',
+          marketing: 'マーケティング',
         }
       },
       billing: {
