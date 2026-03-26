@@ -8,18 +8,17 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   // APPS
   app.get('/api/apps', async (c) => {
     const result = await AppEntity.list(c.env, null, 100);
-    if (result.items.length !== MOCK_APPS.length) {
-      const existingIds = result.items.map(it => it.id);
-      if (existingIds.length > 0) await AppEntity.deleteMany(c.env, existingIds);
-      await Promise.all(MOCK_APPS.map(app => AppEntity.create(c.env, app)));
-      return ok(c, MOCK_APPS);
+    if (result.items.length === 0) {
+      await AppEntity.ensureSeed(c.env);
+      const freshResult = await AppEntity.list(c.env, null, 100);
+      return ok(c, freshResult.items.length > 0 ? freshResult.items : MOCK_APPS);
     }
     return ok(c, result.items);
   });
   // REQUESTS
   app.get('/api/requests', async (c) => {
     const result = await RequestEntity.list(c.env, null, 100);
-    if (result.items.length < MOCK_REQUESTS.length) {
+    if (result.items.length === 0) {
       await RequestEntity.ensureSeed(c.env);
       const freshResult = await RequestEntity.list(c.env, null, 100);
       return ok(c, freshResult.items.length > 0 ? freshResult.items : MOCK_REQUESTS);

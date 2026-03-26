@@ -30,9 +30,10 @@ export const useProvisioningStore = create<ProvisioningState>((set, get) => ({
   isLoading: false,
   error: null,
   initialize: async () => {
-    const { isLoading, apps } = get();
-    if (isLoading || apps.length > 0) return;
-    set({ isLoading: true });
+    const { isLoading, apps, activities } = get();
+    // Only skip if we are already loading or if both critical lists (apps and activities) are populated
+    if (isLoading || (apps.length > 0 && activities.length > 0)) return;
+    set({ isLoading: true, error: null });
     try {
       const [appsData, requestsData, licensesData, activitiesData] = await Promise.all([
         api<AppEntry[]>('/api/apps'),
@@ -40,14 +41,15 @@ export const useProvisioningStore = create<ProvisioningState>((set, get) => ({
         api<License[]>('/api/licenses'),
         api<ActivityLog[]>('/api/activities'),
       ]);
-      set({ 
-        apps: appsData, 
-        requests: requestsData, 
-        licenses: licensesData, 
+      set({
+        apps: appsData,
+        requests: requestsData,
+        licenses: licensesData,
         activities: activitiesData,
-        isLoading: false 
+        isLoading: false
       });
     } catch (err) {
+      console.error('Failed to initialize provisioning store:', err);
       set({ error: (err as Error).message, isLoading: false });
     }
   },
@@ -72,6 +74,7 @@ export const useProvisioningStore = create<ProvisioningState>((set, get) => ({
         requests: state.requests.map(r => r.id === requestId ? updated : r)
       }));
       if (status === 'approved') {
+        // Automatically simulate provisioning workflow steps
         setTimeout(async () => {
           await get().updateRequestStatus(requestId, 'provisioning');
           setTimeout(async () => {
