@@ -1,29 +1,32 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer, 
-  AreaChart, 
-  Area 
+import {
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  AreaChart,
+  Area
 } from 'recharts';
-import { 
-  Download, 
-  FileText, 
-  ArrowUpRight, 
+import {
+  Download,
+  FileText,
   Calendar,
   TrendingUp
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { MOCK_BILLING_DATA, MOCK_APPS } from '@shared/mock-data';
+import { MOCK_BILLING_DATA } from '@shared/mock-data';
+import { useProvisioningStore } from '@/store/use-provisioning-store';
 export function BillingPage() {
   const { t } = useTranslation();
+  const apps = useProvisioningStore(s => s.apps);
+  const initialize = useProvisioningStore(s => s.initialize);
+  useEffect(() => {
+    initialize();
+  }, [initialize]);
   return (
     <div className="space-y-8 animate-fade-in">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -62,32 +65,32 @@ export function BillingPage() {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-                <XAxis 
-                  dataKey="month" 
-                  axisLine={false} 
-                  tickLine={false} 
+                <XAxis
+                  dataKey="month"
+                  axisLine={false}
+                  tickLine={false}
                   tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
                 />
-                <YAxis 
-                  axisLine={false} 
-                  tickLine={false} 
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
                   tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
-                  tickFormatter={(val) => `$${val}`}
+                  tickFormatter={(val) => `${val}`}
                 />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: 'hsl(var(--background))', 
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'hsl(var(--background))',
                     borderColor: 'hsl(var(--border))',
                     borderRadius: '8px'
-                  }} 
+                  }}
                 />
-                <Area 
-                  type="monotone" 
-                  dataKey="spend" 
-                  stroke="#2563eb" 
+                <Area
+                  type="monotone"
+                  dataKey="spend"
+                  stroke="#2563eb"
                   strokeWidth={2}
-                  fillOpacity={1} 
-                  fill="url(#colorSpend)" 
+                  fillOpacity={1}
+                  fill="url(#colorSpend)"
                 />
               </AreaChart>
             </ResponsiveContainer>
@@ -99,21 +102,21 @@ export function BillingPage() {
             <CardDescription>Major cost contributors this month</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            {MOCK_APPS.slice(0, 4).map((app) => (
-              <div key={app.id} className="flex items-center justify-between">
+            {(apps.length > 0 ? apps : []).slice(0, 4).map((app) => (
+              <div key={app.id} className="flex items-center justify-between group">
                 <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded bg-accent flex items-center justify-center p-1.5">
-                    <img src={app.icon} alt="" className="w-full h-full object-contain grayscale" />
+                  <div className="h-8 w-8 rounded bg-accent flex items-center justify-center p-1.5 overflow-hidden">
+                    <img src={app.icon} alt="" className="w-full h-full object-contain grayscale group-hover:grayscale-0 transition-all" />
                   </div>
                   <span className="text-sm font-medium">{app.name}</span>
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-bold">${(app.monthlyCost * 24).toLocaleString()}</p>
-                  <p className="text-xs text-muted-foreground">24 Seats</p>
+                  <p className="text-[10px] text-muted-foreground uppercase">24 Seats</p>
                 </div>
               </div>
             ))}
-            <Button variant="ghost" className="w-full text-xs text-blue-600">View detailed breakdown</Button>
+            <Button variant="ghost" className="w-full text-xs text-blue-600 hover:bg-blue-50">View detailed breakdown</Button>
           </CardContent>
         </Card>
       </div>
@@ -133,7 +136,7 @@ export function BillingPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {MOCK_APPS.map((app) => (
+              {(apps.length > 0 ? apps : []).map((app) => (
                 <TableRow key={app.id} className="group transition-colors">
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-3">
@@ -141,8 +144,8 @@ export function BillingPage() {
                       {app.name}
                     </div>
                   </TableCell>
-                  <TableCell className="capitalize">{app.category}</TableCell>
-                  <TableCell>Enterprise Plan</TableCell>
+                  <TableCell className="capitalize text-sm">{app.category}</TableCell>
+                  <TableCell className="text-sm">Enterprise Plan</TableCell>
                   <TableCell className="text-right font-semibold">${app.monthlyCost.toFixed(2)}</TableCell>
                   <TableCell className="text-right">
                     <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">

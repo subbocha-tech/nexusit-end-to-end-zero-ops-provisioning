@@ -1,12 +1,12 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { 
-  LayoutDashboard, 
-  LayoutGrid, 
-  ListTodo, 
-  CheckCircle, 
-  Key, 
+import {
+  LayoutDashboard,
+  LayoutGrid,
+  ListTodo,
+  CheckCircle,
+  Key,
   CreditCard,
   Zap
 } from "lucide-react";
@@ -51,8 +51,8 @@ export function AppSidebar(): JSX.Element {
           <SidebarMenu className="px-3 py-2 space-y-1">
             {menuItems.map((item) => (
               <SidebarMenuItem key={item.url}>
-                <SidebarMenuButton 
-                  asChild 
+                <SidebarMenuButton
+                  asChild
                   isActive={location.pathname === item.url}
                   className={cn(
                     "w-full justify-start gap-3 px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
@@ -70,10 +70,13 @@ export function AppSidebar(): JSX.Element {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter className="p-6">
-        <div className="rounded-lg bg-accent/50 p-4">
-          <p className="text-xs font-medium text-foreground">Zero-Ops Mode</p>
-          <p className="mt-1 text-2xs text-muted-foreground leading-relaxed">
-            Automated provisioning is active for 12 connected SaaS platforms.
+        <div className="rounded-lg bg-accent/50 p-4 border border-border/40">
+          <div className="flex items-center gap-2">
+            <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+            <p className="text-xs font-semibold text-foreground">Zero-Ops Mode</p>
+          </div>
+          <p className="mt-1 text-[10px] text-muted-foreground leading-relaxed">
+            Automated provisioning is active for 8 connected SaaS platforms.
           </p>
         </div>
       </SidebarFooter>

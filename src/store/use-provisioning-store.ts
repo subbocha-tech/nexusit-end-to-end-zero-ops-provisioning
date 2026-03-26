@@ -27,14 +27,17 @@ export const useProvisioningStore = create<ProvisioningState>((set, get) => ({
   isLoading: false,
   error: null,
   initialize: async () => {
+    // Re-entrancy guard: if already loading or data is present, skip
+    const { isLoading, apps } = get();
+    if (isLoading || apps.length > 0) return;
     set({ isLoading: true });
     try {
-      const [apps, requests, licenses] = await Promise.all([
+      const [appsData, requestsData, licensesData] = await Promise.all([
         api<AppEntry[]>('/api/apps'),
         api<ProvisioningRequest[]>('/api/requests'),
         api<License[]>('/api/licenses'),
       ]);
-      set({ apps, requests, licenses, isLoading: false });
+      set({ apps: appsData, requests: requestsData, licenses: licensesData, isLoading: false });
     } catch (err) {
       set({ error: (err as Error).message, isLoading: false });
     }
