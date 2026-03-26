@@ -1,22 +1,16 @@
-import type { User, Chat, ChatMessage } from './types';
+import type { User, Chat, ChatMessage, ProvisioningRequest, AppEntry } from './types';
 export const MOCK_USERS: User[] = [
-  { id: 'u1', name: 'Admin User', department: 'IT', email: 'admin@nexus-it.io' },
-  { id: 'u2', name: 'Finance Lead', department: 'Finance', email: 'finance@nexus-it.io' }
+  { id: 'u1', name: 'Yuki Tanaka', department: 'Engineering', email: 'yuki.tanaka@nexus-it.io' },
+  { id: 'u2', name: 'Sarah Chen', department: 'Marketing', email: 'sarah.chen@nexus-it.io' },
+  { id: 'u3', name: 'Michael Ross', department: 'Legal', email: 'michael.ross@nexus-it.io' },
+  { id: 'u4', name: 'Elena Rodriguez', department: 'Finance', email: 'elena.rodriguez@nexus-it.io' }
 ];
 export const MOCK_CHATS: Chat[] = [
   { id: 'c1', title: 'System Alerts' },
 ];
 export const MOCK_CHAT_MESSAGES: ChatMessage[] = [
-  { id: 'm1', chatId: 'c1', userId: 'u1', text: 'GitHub provisioned for user @john_doe', ts: Date.now() },
+  { id: 'm1', chatId: 'c1', userId: 'u1', text: 'GitHub provisioned for user @yuki_tanaka', ts: Date.now() },
 ];
-export interface AppEntry {
-  id: string;
-  name: string;
-  category: 'productivity' | 'development' | 'finance' | 'infrastructure' | 'security' | 'marketing';
-  icon: string;
-  description: string;
-  monthlyCost: number;
-}
 export const MOCK_APPS: AppEntry[] = [
   { id: 'a1', name: 'Slack', category: 'productivity', icon: 'https://cdn-icons-png.flaticon.com/512/3800/3800024.png', description: 'Real-time communication and collaboration for teams.', monthlyCost: 12.50 },
   { id: 'a2', name: 'GitHub', category: 'development', icon: 'https://cdn-icons-png.flaticon.com/512/25/25231.png', description: 'World leading AI-powered developer platform.', monthlyCost: 21.00 },
@@ -26,31 +20,18 @@ export const MOCK_APPS: AppEntry[] = [
   { id: 'a6', name: 'Zoom', category: 'productivity', icon: 'https://cdn-icons-png.flaticon.com/512/4401/4401433.png', description: 'Video conferencing and online meetings.', monthlyCost: 14.99 },
   { id: 'a7', name: 'Datadog', category: 'infrastructure', icon: 'https://cdn-icons-png.flaticon.com/512/5969/5969145.png', description: 'Monitoring and security platform for cloud apps.', monthlyCost: 95.00 },
   { id: 'a8', name: 'Jira', category: 'development', icon: 'https://cdn-icons-png.flaticon.com/512/5968/5968875.png', description: 'Project tracking software for agile teams.', monthlyCost: 7.50 },
-  { id: 'a9', name: 'Microsoft 365', category: 'productivity', icon: 'https://cdn-icons-png.flaticon.com/512/732/732221.png', description: 'Cloud-based subscription service that brings together the best tools for the way people work today.', monthlyCost: 20.00 },
-  { id: 'a10', name: 'Google Workspace', category: 'productivity', icon: 'https://cdn-icons-png.flaticon.com/512/2875/2875394.png', description: 'A collection of cloud computing, productivity and collaboration tools.', monthlyCost: 18.00 },
-  { id: 'a11', name: 'Figma', category: 'productivity', icon: 'https://cdn-icons-png.flaticon.com/512/5968/5968705.png', description: 'Collaborative interface design tool.', monthlyCost: 15.00 },
-  { id: 'a12', name: 'Tableau', category: 'finance', icon: 'https://cdn-icons-png.flaticon.com/512/8727/8727655.png', description: 'Interactive data visualization software focused on business intelligence.', monthlyCost: 75.00 },
-  { id: 'a13', name: 'Adobe Creative Cloud', category: 'productivity', icon: 'https://cdn-icons-png.flaticon.com/512/5968/5968393.png', description: 'Suite of applications for graphic design, video editing, and web development.', monthlyCost: 54.99 },
-  { id: 'a14', name: 'HubSpot', category: 'marketing', icon: 'https://cdn-icons-png.flaticon.com/512/5968/5968872.png', description: 'Software products for inbound marketing, sales, and customer service.', monthlyCost: 45.00 },
-  { id: 'a15', name: 'Okta', category: 'security', icon: 'https://cdn-icons-png.flaticon.com/512/919/919832.png', description: 'Identity and access management for modern enterprise.', monthlyCost: 8.00 },
-  { id: 'a16', name: 'Confluence', category: 'productivity', icon: 'https://cdn-icons-png.flaticon.com/512/5968/5968748.png', description: 'Remote-friendly team workspace where knowledge and collaboration meet.', monthlyCost: 6.00 },
 ];
-export interface ProvisioningRequest {
-  id: string;
-  appId: string;
-  appName: string;
-  userId: string;
-  userName: string;
-  department: string;
-  status: 'pending' | 'approved' | 'provisioned' | 'rejected' | 'provisioning';
-  justification: string;
-  createdAt: string;
-  updatedAt: string;
-}
 export const MOCK_REQUESTS: ProvisioningRequest[] = [
-  { id: 'r1', appId: 'a2', appName: 'GitHub', userId: 'u1', userName: 'Yuki Tanaka', department: 'Engineering', status: 'provisioned', justification: 'Required for new project source control.', createdAt: '2024-05-10', updatedAt: '2024-05-10' },
-  { id: 'r2', appId: 'a4', appName: 'Salesforce', userId: 'u2', userName: 'Kenji Sato', department: 'Sales', status: 'pending', justification: 'Access to CRM for lead management.', createdAt: '2024-05-12', updatedAt: '2024-05-12' },
-  { id: 'r3', appId: 'a3', appName: 'AWS', userId: 'u1', userName: 'Admin', department: 'IT', status: 'approved', justification: 'Infrastructure maintenance.', createdAt: '2024-05-11', updatedAt: '2024-05-11' },
+  { id: 'r1', appId: 'a2', appName: 'GitHub', userId: 'u1', userName: 'Yuki Tanaka', department: 'Engineering', status: 'provisioned', justification: 'Source control for Project Phoenix.', createdAt: '2024-05-01', updatedAt: '2024-05-02' },
+  { id: 'r2', appId: 'a4', appName: 'Salesforce', userId: 'u2', userName: 'Sarah Chen', department: 'Marketing', status: 'pending', justification: 'Need to track regional campaign leads.', createdAt: '2024-05-14', updatedAt: '2024-05-14' },
+  { id: 'r3', appId: 'a3', appName: 'AWS', userId: 'u1', userName: 'Yuki Tanaka', department: 'Engineering', status: 'approved', justification: 'Sandbox environment for API testing.', createdAt: '2024-05-12', updatedAt: '2024-05-13' },
+  { id: 'r4', appId: 'a5', appName: 'Notion', userId: 'u3', userName: 'Michael Ross', department: 'Legal', status: 'provisioned', justification: 'Centralized documentation for contract templates.', createdAt: '2024-05-05', updatedAt: '2024-05-06' },
+  { id: 'r5', appId: 'a1', appName: 'Slack', userId: 'u4', userName: 'Elena Rodriguez', department: 'Finance', status: 'provisioning', justification: 'Cross-department communication for audits.', createdAt: '2024-05-13', updatedAt: '2024-05-15' },
+  { id: 'r6', appId: 'a7', appName: 'Datadog', userId: 'u1', userName: 'Yuki Tanaka', department: 'Engineering', status: 'pending', justification: 'Monitoring setup for production clusters.', createdAt: '2024-05-15', updatedAt: '2024-05-15' },
+  { id: 'r7', appId: 'a8', appName: 'Jira', userId: 'u2', userName: 'Sarah Chen', department: 'Marketing', status: 'rejected', justification: 'Requested Enterprise plan when Standard is sufficient.', createdAt: '2024-05-08', updatedAt: '2024-05-09' },
+  { id: 'r8', appId: 'a6', appName: 'Zoom', userId: 'u3', userName: 'Michael Ross', department: 'Legal', status: 'provisioned', justification: 'External client video consultations.', createdAt: '2024-05-03', updatedAt: '2024-05-04' },
+  { id: 'r9', appId: 'a2', appName: 'GitHub', userId: 'u4', userName: 'Elena Rodriguez', department: 'Finance', status: 'approved', justification: 'Access to financial reporting scripts.', createdAt: '2024-05-11', updatedAt: '2024-05-12' },
+  { id: 'r10', appId: 'a3', appName: 'AWS', userId: 'u2', userName: 'Sarah Chen', department: 'Marketing', status: 'rejected', justification: 'No clear business need for infra access in Marketing role.', createdAt: '2024-05-10', updatedAt: '2024-05-11' },
 ];
 export const MOCK_BILLING_DATA = [
   { month: 'Jan', spend: 4200, licenses: 145 },

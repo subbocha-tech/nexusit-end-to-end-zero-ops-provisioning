@@ -7,24 +7,31 @@ import type { UpdateStatusInput } from "@shared/types";
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
   // APPS
   app.get('/api/apps', async (c) => {
-    // Robust seeding for Phase 4: ensure the index is populated with the expanded catalog
-    await AppEntity.ensureSeed(c.env);
     const result = await AppEntity.list(c.env, null, 100);
-    // Always return full MOCK_APPS if store is empty or for initial sync to ensure consistency
-    if (result.items.length < MOCK_APPS.length) {
-      console.log(`Synchronizing app entities... (${result.items.length}/${MOCK_APPS.length})`);
-      // Update entities that might be missing or need updates from expanded mock data
-      await Promise.all(MOCK_APPS.map(app => new AppEntity(c.env, app.id).save(app)));
+    // Strict Enforcement: if catalog size differs, re-seed to match MOCK_APPS exactly
+    if (result.items.length !== MOCK_APPS.length) {
+      console.log(`Re-syncing app entities to core 8...`);
+      // Delete all existing to prune leftover apps from previous expansion
+      const existingIds = result.items.map(it => it.id);
+      if (existingIds.length > 0) {
+        await AppEntity.deleteMany(c.env, existingIds);
+      }
+      // Re-seed
+      await Promise.all(MOCK_APPS.map(app => AppEntity.create(c.env, app)));
       return ok(c, MOCK_APPS);
     }
     return ok(c, result.items);
   });
   // REQUESTS
   app.get('/api/requests', async (c) => {
-    await RequestEntity.ensureSeed(c.env);
     const result = await RequestEntity.list(c.env, null, 100);
-    // Fallback if seeding hasn't hit Durable Object yet
-    if (result.items.length === 0) return ok(c, MOCK_REQUESTS);
+    // Seed expanded 10-request list if store is significantly different from target
+    if (result.items.length < MOCK_REQUESTS.length) {
+      console.log(`Seeding expanded request dataset...`);
+      await RequestEntity.ensureSeed(c.env);
+      const freshResult = await RequestEntity.list(c.env, null, 100);
+      return ok(c, freshResult.items.length > 0 ? freshResult.items : MOCK_REQUESTS);
+    }
     return ok(c, result.items);
   });
   app.post('/api/requests', async (c) => {

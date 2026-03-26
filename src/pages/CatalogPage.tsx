@@ -23,9 +23,10 @@ export function CatalogPage() {
     if (apps.length === 0) initialize();
   }, [apps.length, initialize]);
   const filteredApps = apps.filter(app =>
-    app.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    app.category.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+    (app.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    app.category.toLowerCase().includes(searchQuery.toLowerCase())) &&
+    ['productivity', 'development', 'finance', 'infrastructure'].includes(app.category)
+  ); 
   const getAppState = (appId: string) => {
     const hasLicense = licenses.some(l => l.appId === appId && l.userId === 'u1');
     if (hasLicense) return 'active';

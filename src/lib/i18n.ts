@@ -38,8 +38,6 @@ const resources = {
           development: 'Development',
           finance: 'Finance',
           infrastructure: 'Infrastructure',
-          security: 'Security',
-          marketing: 'Marketing',
         }
       },
       billing: {
@@ -99,8 +97,6 @@ const resources = {
           development: '開発',
           finance: '財務',
           infrastructure: 'インフラ',
-          security: 'セキュリティ',
-          marketing: 'マーケティング',
         }
       },
       billing: {
