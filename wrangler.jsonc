@@ -4,7 +4,7 @@
  */
  {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "nexus-it-provisionin-pro3fw3og3im2c6mv_ll2",
+	"name": "nexusit-end-to-end-zero-ops-provisioning",,
 	"main": "worker/index.ts",
 	"compatibility_date": "2025-04-24",
 	"assets": {
