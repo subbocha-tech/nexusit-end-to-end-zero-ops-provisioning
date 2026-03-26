@@ -42,6 +42,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   });
   // LICENSES
   app.get('/api/licenses', async (c) => {
+    await LicenseEntity.ensureSeed(c.env);
     const result = await LicenseEntity.list(c.env, null, 100);
     return ok(c, result.items);
   });

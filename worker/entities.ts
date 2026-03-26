@@ -51,4 +51,5 @@ export class LicenseEntity extends IndexedEntity<License> {
     monthlyCost: 0,
     grantedAt: ""
   };
+  static seedData = [];
 }
