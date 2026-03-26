@@ -30,27 +30,38 @@ export const useProvisioningStore = create<ProvisioningState>((set, get) => ({
   isLoading: false,
   error: null,
   initialize: async () => {
-    const { isLoading, apps, activities } = get();
-    // Only skip if we are already loading or if both critical lists (apps and activities) are populated
-    if (isLoading || (apps.length > 0 && activities.length > 0)) return;
+    const { isLoading, apps, requests, licenses, activities } = get();
+    // Only skip if we are already loading or if all data arrays are populated
+    if (isLoading || (apps.length > 0 && requests.length > 0 && licenses.length > 0 && activities.length > 0)) return;
     set({ isLoading: true, error: null });
     try {
-      const [appsData, requestsData, licensesData, activitiesData] = await Promise.all([
-        api<AppEntry[]>('/api/apps'),
-        api<ProvisioningRequest[]>('/api/requests'),
-        api<License[]>('/api/licenses'),
-        api<ActivityLog[]>('/api/activities'),
-      ]);
-      set({
-        apps: appsData,
-        requests: requestsData,
-        licenses: licensesData,
-        activities: activitiesData,
-        isLoading: false
+      const fetches = [
+        {key:'apps', fn:()=>api<AppEntry[]>('/api/apps')},
+        {key:'requests', fn:()=>api<ProvisioningRequest[]>('/api/requests')},
+        {key:'licenses', fn:()=>api<License[]>('/api/licenses')},
+        {key:'activities', fn:()=>api<ActivityLog[]>('/api/activities')}
+      ];
+      const results = await Promise.allSettled(fetches.map(f => f.fn()));
+      const newState = {apps:[],requests:[],licenses:[],activities:[]};
+      const failed = [];
+      results.forEach((result, index) => {
+        if (result.status === 'fulfilled') {
+          newState[fetches[index].key as keyof typeof newState] = result.value;
+        } else {
+          failed.push(fetches[index].key);
+        }
       });
+      if (failed.length > 0) {
+        results.forEach((result, index) => {
+          if (result.status === 'rejected' && failed.includes(fetches[index].key)) {
+            console.error(`Provisioning store initialization failed for ${fetches[index].key}:`, result.reason);
+          }
+        });
+      }
+      set({...newState, isLoading: false, error: failed.length === 4 ? 'Failed to load all provisioning data' : null});
     } catch (err) {
       console.error('Failed to initialize provisioning store:', err);
-      set({ error: (err as Error).message, isLoading: false });
+      set({ error: (err as Error)?.message ?? 'An unknown error occurred', isLoading: false });
     }
   },
   submitRequest: async (params) => {
@@ -61,7 +72,7 @@ export const useProvisioningStore = create<ProvisioningState>((set, get) => ({
       });
       set(state => ({ requests: [newReq, ...state.requests] }));
     } catch (err) {
-      set({ error: (err as Error).message });
+      set({ error: (err as Error)?.message ?? 'An unknown error occurred' });
     }
   },
   updateRequestStatus: async (requestId, status) => {
@@ -76,14 +87,14 @@ export const useProvisioningStore = create<ProvisioningState>((set, get) => ({
       if (status === 'approved') {
         // Automatically simulate provisioning workflow steps
         setTimeout(async () => {
-          await get().updateRequestStatus(requestId, 'provisioning');
+          await get().updateRequestStatus(requestId, 'provisioning' as RequestStatus);
           setTimeout(async () => {
             await get().grantLicense(requestId);
           }, 2500);
         }, 1200);
       }
     } catch (err) {
-      set({ error: (err as Error).message });
+      set({ error: (err as Error)?.message ?? 'An unknown error occurred' });
     }
   },
   grantLicense: async (requestId) => {
@@ -113,7 +124,7 @@ export const useProvisioningStore = create<ProvisioningState>((set, get) => ({
         requests: state.requests.map(r => r.id === requestId ? updatedRequest : r)
       }));
     } catch (err) {
-      set({ error: (err as Error).message });
+      set({ error: (err as Error)?.message ?? 'An unknown error occurred' });
     }
   },
   revokeLicense: async (licenseId) => {
@@ -123,7 +134,7 @@ export const useProvisioningStore = create<ProvisioningState>((set, get) => ({
         licenses: state.licenses.filter(l => l.id !== licenseId)
       }));
     } catch (err) {
-      set({ error: (err as Error).message });
+      set({ error: (err as Error)?.message ?? 'An unknown error occurred' });
     }
   },
 }));
