@@ -7,25 +7,33 @@ import type { RequestStatus, UpdateStatusInput } from "@shared/types";
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
   // APPS
   app.get('/api/apps', async (c) => {
+    console.log('GET /api/apps hit');
     await AppEntity.ensureSeed(c.env);
     let result = await AppEntity.list(c.env, null, 100);
+    console.log(`after ensureSeed: ${result.items.length} items`);
     if(result.items.length === 0) {
+      console.log(`extra seeding triggered, seeding ${MOCK_APPS.length} items`);
       for(const appData of MOCK_APPS) {
         await AppEntity.create(c.env, appData);
       }
       result = await AppEntity.list(c.env, null, 100);
+      console.log(`final result.items.length: ${result.items.length}`);
     }
     return ok(c, result.items);
   });
   // REQUESTS
   app.get('/api/requests', async (c) => {
+    console.log('GET /api/requests hit');
     await RequestEntity.ensureSeed(c.env);
     let result = await RequestEntity.list(c.env, null, 100);
+    console.log(`after ensureSeed: ${result.items.length} items`);
     if(result.items.length === 0) {
+      console.log(`extra seeding triggered, seeding ${MOCK_REQUESTS.length} items`);
       for(const reqData of MOCK_REQUESTS) {
         await RequestEntity.create(c.env, reqData);
       }
       result = await RequestEntity.list(c.env, null, 100);
+      console.log(`final result.items.length: ${result.items.length}`);
     }
     return ok(c, result.items);
   });
@@ -55,8 +63,10 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   });
   // LICENSES
   app.get('/api/licenses', async (c) => {
+    console.log('GET /api/licenses hit');
     await LicenseEntity.ensureSeed(c.env);
     const result = await LicenseEntity.list(c.env, null, 100);
+    console.log(`after ensureSeed: ${result.items.length} items`);
     return ok(c, result.items);
   });
   app.post('/api/licenses', async (c) => {
