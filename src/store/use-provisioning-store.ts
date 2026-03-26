@@ -6,12 +6,14 @@ import type {
   License,
   RequestStatus,
   CreateRequestInput,
-  UpdateStatusInput
+  UpdateStatusInput,
+  ActivityLog
 } from '@shared/types';
 interface ProvisioningState {
   apps: AppEntry[];
   requests: ProvisioningRequest[];
   licenses: License[];
+  activities: ActivityLog[];
   isLoading: boolean;
   error: string | null;
   initialize: () => Promise<void>;
@@ -24,20 +26,27 @@ export const useProvisioningStore = create<ProvisioningState>((set, get) => ({
   apps: [],
   requests: [],
   licenses: [],
+  activities: [],
   isLoading: false,
   error: null,
   initialize: async () => {
-    // Re-entrancy guard: if already loading or data is present, skip
     const { isLoading, apps } = get();
     if (isLoading || apps.length > 0) return;
     set({ isLoading: true });
     try {
-      const [appsData, requestsData, licensesData] = await Promise.all([
+      const [appsData, requestsData, licensesData, activitiesData] = await Promise.all([
         api<AppEntry[]>('/api/apps'),
         api<ProvisioningRequest[]>('/api/requests'),
         api<License[]>('/api/licenses'),
+        api<ActivityLog[]>('/api/activities'),
       ]);
-      set({ apps: appsData, requests: requestsData, licenses: licensesData, isLoading: false });
+      set({ 
+        apps: appsData, 
+        requests: requestsData, 
+        licenses: licensesData, 
+        activities: activitiesData,
+        isLoading: false 
+      });
     } catch (err) {
       set({ error: (err as Error).message, isLoading: false });
     }
@@ -63,7 +72,6 @@ export const useProvisioningStore = create<ProvisioningState>((set, get) => ({
         requests: state.requests.map(r => r.id === requestId ? updated : r)
       }));
       if (status === 'approved') {
-        // High-fidelity Zero-Ops Simulation
         setTimeout(async () => {
           await get().updateRequestStatus(requestId, 'provisioning');
           setTimeout(async () => {

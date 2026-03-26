@@ -53,6 +53,17 @@ export interface AppEntry {
   description: string;
   monthlyCost: number;
 }
+export type ActivityType = 'security' | 'billing' | 'system' | 'provisioning';
+export interface ActivityLog {
+  id: string;
+  type: ActivityType;
+  title: string;
+  message: string;
+  status: 'info' | 'warning' | 'success' | 'error';
+  timestamp: string;
+  userId?: string;
+  userName?: string;
+}
 export interface CreateRequestInput {
   appId: string;
   appName: string;

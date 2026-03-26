@@ -1,6 +1,6 @@
 import { IndexedEntity } from "./core-utils";
-import type { User, AppEntry, ProvisioningRequest, License } from "@shared/types";
-import { MOCK_USERS, MOCK_APPS, MOCK_REQUESTS } from "@shared/mock-data";
+import type { User, AppEntry, ProvisioningRequest, License, ActivityLog } from "@shared/types";
+import { MOCK_USERS, MOCK_APPS, MOCK_REQUESTS, MOCK_LICENSES, MOCK_ACTIVITIES } from "@shared/mock-data";
 export class UserEntity extends IndexedEntity<User> {
   static readonly entityName = "user";
   static readonly indexName = "users";
@@ -10,13 +10,13 @@ export class UserEntity extends IndexedEntity<User> {
 export class AppEntity extends IndexedEntity<AppEntry> {
   static readonly entityName = "app";
   static readonly indexName = "apps";
-  static readonly initialState: AppEntry = { 
-    id: "", 
-    name: "", 
-    category: "productivity", 
-    icon: "", 
-    description: "", 
-    monthlyCost: 0 
+  static readonly initialState: AppEntry = {
+    id: "",
+    name: "",
+    category: "productivity",
+    icon: "",
+    description: "",
+    monthlyCost: 0
   };
   static seedData = MOCK_APPS;
 }
@@ -51,5 +51,18 @@ export class LicenseEntity extends IndexedEntity<License> {
     monthlyCost: 0,
     grantedAt: ""
   };
-  static seedData = [];
+  static seedData = MOCK_LICENSES;
+}
+export class ActivityEntity extends IndexedEntity<ActivityLog> {
+  static readonly entityName = "activity";
+  static readonly indexName = "activities";
+  static readonly initialState: ActivityLog = {
+    id: "",
+    type: "system",
+    title: "",
+    message: "",
+    status: "info",
+    timestamp: ""
+  };
+  static seedData = MOCK_ACTIVITIES;
 }
