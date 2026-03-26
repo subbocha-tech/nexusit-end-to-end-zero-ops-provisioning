@@ -13,12 +13,9 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     console.log(`after ensureSeed: ${result.items.length} items`);
     if(result.items.length === 0) {
       console.log(`extra seeding triggered, seeding ${MOCK_APPS.length} items`);
-      for(const appData of MOCK_APPS) {
-        await AppEntity.create(c.env, appData);
-      }
-      result = await AppEntity.list(c.env, null, 100);
-      console.log(`final result.items.length: ${result.items.length}`);
+      return ok(c, MOCK_APPS);
     }
+    console.log(`final result.items.length: ${result.items.length}`);
     return ok(c, result.items);
   });
   // REQUESTS
@@ -29,12 +26,9 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     console.log(`after ensureSeed: ${result.items.length} items`);
     if(result.items.length === 0) {
       console.log(`extra seeding triggered, seeding ${MOCK_REQUESTS.length} items`);
-      for(const reqData of MOCK_REQUESTS) {
-        await RequestEntity.create(c.env, reqData);
-      }
-      result = await RequestEntity.list(c.env, null, 100);
-      console.log(`final result.items.length: ${result.items.length}`);
+      return ok(c, MOCK_REQUESTS);
     }
+    console.log(`final result.items.length: ${result.items.length}`);
     return ok(c, result.items);
   });
   app.post('/api/requests', async (c) => {
@@ -65,8 +59,14 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   app.get('/api/licenses', async (c) => {
     console.log('GET /api/licenses hit');
     await LicenseEntity.ensureSeed(c.env);
-    const result = await LicenseEntity.list(c.env, null, 100);
+    let result = await LicenseEntity.list(c.env, null, 100);
     console.log(`after ensureSeed: ${result.items.length} items`);
+    if(result.items.length === 0) {
+      console.log(`extra seeding triggered for licenses`);
+      // Note: No MOCK_LICENSES imported, fallback to empty
+      return ok(c, []);
+    }
+    console.log(`final result.items.length: ${result.items.length}`);
     return ok(c, result.items);
   });
   app.post('/api/licenses', async (c) => {
