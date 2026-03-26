@@ -1,72 +1,81 @@
-/* This is a demo sidebar. **COMPULSORY** Edit this file to customize the sidebar OR remove it from appLayout OR don't use appLayout at all */
 import React from "react";
-import { Home, Layers, Compass, Star, Settings, LifeBuoy } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { 
+  LayoutDashboard, 
+  LayoutGrid, 
+  ListTodo, 
+  CheckCircle, 
+  Key, 
+  CreditCard,
+  Zap
+} from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
   SidebarHeader,
-  SidebarSeparator,
-  SidebarInput,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarMenuAction,
-  SidebarMenuBadge,
+  SidebarGroupLabel,
 } from "@/components/ui/sidebar";
-
+import { cn } from "@/lib/utils";
 export function AppSidebar(): JSX.Element {
+  const { t } = useTranslation();
+  const location = useLocation();
+  const menuItems = [
+    { title: t('nav.dashboard'), icon: LayoutDashboard, url: "/" },
+    { title: t('nav.catalog'), icon: LayoutGrid, url: "/catalog" },
+    { title: t('nav.requests'), icon: ListTodo, url: "/requests" },
+    { title: t('nav.approvals'), icon: CheckCircle, url: "/approvals" },
+    { title: t('nav.licenses'), icon: Key, url: "/licenses" },
+    { title: t('nav.billing'), icon: CreditCard, url: "/billing" },
+  ];
   return (
-    <Sidebar>
-      <SidebarHeader>
-        <div className="flex items-center gap-2 px-2 py-1">
-          <div className="h-6 w-6 rounded-md bg-gradient-to-br from-indigo-500 to-purple-500" />
-          <span className="text-sm font-medium">Demo Sidebar</span>
-        </div>
-        <SidebarInput placeholder="Search" />
+    <Sidebar className="border-r border-border/50">
+      <SidebarHeader className="h-16 flex items-center px-6">
+        <Link to="/" className="flex items-center gap-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white">
+            <Zap className="h-5 w-5" />
+          </div>
+          <span className="text-xl font-bold tracking-tight text-foreground">NexusIT</span>
+        </Link>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive>
-                <a href="#"><Home /> <span>Home</span></a>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <a href="#"><Layers /> <span>Projects</span></a>
-              </SidebarMenuButton>
-              <SidebarMenuAction>
-                <Star className="size-4" />
-              </SidebarMenuAction>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <a href="#"><Compass /> <span>Explore</span></a>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarGroup>
-
-        <SidebarSeparator />
-
-        <SidebarGroup>
-          <SidebarGroupLabel>Quick Links</SidebarGroupLabel>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <a href="#"><Star /> <span>Starred</span></a>
-              </SidebarMenuButton>
-              <SidebarMenuBadge>5</SidebarMenuBadge>
-            </SidebarMenuItem>
+          <SidebarGroupLabel className="px-6 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">
+            Enterprise Management
+          </SidebarGroupLabel>
+          <SidebarMenu className="px-3 py-2 space-y-1">
+            {menuItems.map((item) => (
+              <SidebarMenuItem key={item.url}>
+                <SidebarMenuButton 
+                  asChild 
+                  isActive={location.pathname === item.url}
+                  className={cn(
+                    "w-full justify-start gap-3 px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
+                    location.pathname === item.url ? "bg-accent text-accent-foreground" : "text-muted-foreground"
+                  )}
+                >
+                  <Link to={item.url}>
+                    <item.icon className="h-4 w-4" />
+                    <span>{item.title}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            ))}
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter>
-        <div className="px-2 text-xs text-muted-foreground">A simple shadcn sidebar</div>
+      <SidebarFooter className="p-6">
+        <div className="rounded-lg bg-accent/50 p-4">
+          <p className="text-xs font-medium text-foreground">Zero-Ops Mode</p>
+          <p className="mt-1 text-2xs text-muted-foreground leading-relaxed">
+            Automated provisioning is active for 12 connected SaaS platforms.
+          </p>
+        </div>
       </SidebarFooter>
     </Sidebar>
   );
