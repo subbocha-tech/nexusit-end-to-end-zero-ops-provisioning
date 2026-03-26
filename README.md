@@ -1,6 +1,6 @@
 # Cloudflare Workers React Starter Template
 
-[cloudflarebutton]
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/subbocha-tech/nexusit-end-to-end-zero-ops-provisioning)
 
 A production-ready full-stack application template built on Cloudflare Workers. This template provides a scalable architecture using Durable Objects for stateful entities (Users and ChatBoards), Hono for API routing, and a modern React frontend with TanStack Query, shadcn/ui, and Tailwind CSS. Perfect for real-time apps like chat systems, with built-in indexing for efficient listing and pagination.
 
@@ -83,7 +83,7 @@ bun deploy
 
 This builds the frontend assets, bundles the worker, and deploys via Wrangler. Your app will be served globally with zero-cold-start latency.
 
-[cloudflarebutton]
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/subbocha-tech/nexusit-end-to-end-zero-ops-provisioning)
 
 Configure `wrangler.jsonc` for custom bindings/migrations if needed. Assets are automatically handled as a SPA.
 
